@@ -2922,7 +2922,65 @@ namespace ImGui
     IMGUI_API void          DebugNodeViewport(ImGuiViewportP* viewport);
     IMGUI_API void          DebugRenderViewportThumbnail(ImDrawList* draw_list, ImGuiViewportP* viewport, const ImRect& bb);
 
+
+
 } // namespace ImGui
+
+
+enum ImGuiDockRequestType
+{
+    ImGuiDockRequestType_None = 0,
+    ImGuiDockRequestType_Dock,
+    ImGuiDockRequestType_Undock,
+    ImGuiDockRequestType_Split                  // Split is the same as Dock but without a DockPayload
+};
+
+struct ImGuiDockRequest
+{
+    ImGuiDockRequestType    Type;
+    ImGuiWindow* DockTargetWindow;   // Destination/Target Window to dock into (may be a loose window or a DockNode, might be NULL in which case DockTargetNode cannot be NULL)
+    ImGuiDockNode* DockTargetNode;     // Destination/Target Node to dock into
+    ImGuiWindow* DockPayload;        // Source/Payload window to dock (may be a loose window or a DockNode), [Optional]
+    ImGuiDir                DockSplitDir;
+    float                   DockSplitRatio;
+    bool                    DockSplitOuter;
+    ImGuiWindow* UndockTargetWindow;
+    ImGuiDockNode* UndockTargetNode;
+
+    ImGuiDockRequest();
+};
+
+
+struct ImGuiDockPreviewData
+{
+    ImGuiDockNode   FutureNode;
+    bool            IsDropAllowed;
+    bool            IsCenterAvailable;
+    bool            IsSidesAvailable;           // Hold your breath, grammar freaks..
+    bool            IsSplitDirExplicit;         // Set when hovered the drop rect (vs. implicit SplitDir==None when hovered the window)
+    ImGuiDockNode* SplitNode;
+    ImGuiDir        SplitDir;
+    float           SplitRatio;
+    ImRect          DropRectsDraw[4 + 1];  // May be slightly different from hit-testing drop rects used in DockNodeCalcDropRects(), NOTE: This was set manually to 4 + 1 because the cimgui generator can't reach into imgui.h to pull the value for ImGuiDir_COUNT.
+
+    ImGuiDockPreviewData();
+};
+
+// Persistent Settings data, stored contiguously in SettingsNodes (sizeof() ~32 bytes)
+struct ImGuiDockNodeSettings
+{
+    ImGuiID             ID;
+    ImGuiID             ParentNodeId;
+    ImGuiID             ParentWindowId;
+    ImGuiID             SelectedTabId;
+    signed char         SplitAxis;
+    char                Depth;
+    ImGuiDockNodeFlags  Flags;                  // NB: We save individual flags one by one in ascii format (ImGuiDockNodeFlags_SavedFlagsMask_)
+    ImVec2ih            Pos;
+    ImVec2ih            Size;
+    ImVec2ih            SizeRef;
+    ImGuiDockNodeSettings();
+};
 
 
 //-----------------------------------------------------------------------------
